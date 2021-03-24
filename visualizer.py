@@ -1,10 +1,10 @@
 import pygame
 import sys
-import numpy as np
+from sorting_algorithms import MergeSort, BubbleSort
 
 pygame.init()
 # WINDOW DIMENSIONS
-WIDTH = 800
+WIDTH = 1024
 HEIGHT = 800
 
 # WINDOW
@@ -21,36 +21,48 @@ GREEN = (0, 255, 0)
 
 def draw_bars(array):
     WIN.fill(WHITE)
+    pos_x = WIDTH // len(array)
     for i in range(len(array)):
         pygame.draw.line(WIN, GREEN,
-                         (WIDTH // (len(array)) * i, 0),
-                         (WIDTH // (len(array)) * i, array[i]),
+                         (pos_x * i, HEIGHT),
+                         (pos_x * i, HEIGHT - array[i]),
                          WIDTH // len(array))
 
 
-def generate_array(max_number, size):
-    return [np.random.randint(max_number, size=size)[i] for i in range(size)]
+def check_events(array, algorithm):
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit(0)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                pygame.quit()
+                sys.exit(0)
+            elif event.key == pygame.K_r:
+                array = algorithm.generate_array()
+            elif event.key == pygame.K_RETURN:
+                algorithm.algorithm()
+
+    return array
+
+
+def update(array):
+    pygame.time.wait(25)
+    draw_bars(array)
+    pygame.display.update()
 
 
 def main():
     run = True
     clock = pygame.time.Clock()
-    array = generate_array(800, 100)
+    algo = BubbleSort()
+    array = algo.array
     while run:
         WIN.fill(WHITE)
         if array:
             draw_bars(array)
         clock.tick(FPS)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit(0)
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit(0)
-                elif event.key == pygame.K_r:
-                    array = generate_array(800, 100)
+        array = check_events(array, algo)
         pygame.display.update()
 
 
