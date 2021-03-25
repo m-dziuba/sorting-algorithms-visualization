@@ -85,46 +85,66 @@ class MergeSort(Algorithm):
     def __init__(self):
         super(MergeSort, self).__init__("MergeSort")
 
-
-    def algorithm(self, array=None):
-        if not array:
-            array = self.array
-        array_length = len(array)
-        if array_length > 1:
-            first_half = array[:array_length // 2]
-            second_half = array[array_length // 2:]
-            self.algorithm(first_half)
-            self.algorithm(second_half)
-
+    def algorithm(self, start_index=None, end_index=None):
+        if start_index is None:
+            start_index, end_index = 0, len(self.array)
+        if (end_index - start_index) > 1:
+            middle_index = (end_index + start_index) // 2
+            self.algorithm(start_index, middle_index)
+            self.algorithm(middle_index, end_index)
             i = j = 0
-            for k in range(len(array)):
-                if i < len(first_half) and j < len(second_half):
-                    if first_half[i] < second_half[j]:
-                        array[k] = first_half[i]
+            for k in range(start_index, end_index - 1):
+                if i + 1 < len(self.array[start_index: end_index]) and j * 2 < len(self.array[start_index: end_index]):
+                    if self.array[start_index + i] < self.array[middle_index + j]:
                         i += 1
                     else:
-                        array[k] = second_half[j]
+                        self.array.insert(k, self.array[middle_index + j])
+                        i += 1
                         j += 1
-                elif i < len(first_half):
-                    array[k] = first_half[i]
+                        del self.array[middle_index + j]
+                    self.update_display()
+
+
+class QuickSort(Algorithm):
+
+    def __init__(self):
+        super(QuickSort, self).__init__("QuickSort")
+
+    def algorithm(self, start_index=None, end_index=None):
+        if start_index is None:
+            start_index, end_index = 0, len(self.array) - 1
+        if end_index - start_index != 0:
+            pivot = self.array[end_index]
+            i = - 1
+            for j in range(start_index, end_index):
+                if self.array[j] < pivot:
                     i += 1
-                elif j < len(second_half):
-                    array[k] = second_half[j]
-                    j += 1
+                    self.array[i + start_index], self.array[j] = self.array[j], self.array[i + start_index]
+                    self.update_display()
+            self.array[start_index + i + 1], self.array[end_index] = self.array[end_index], self.array[start_index + i + 1]
+            self.update_display()
+
+            self.algorithm(start_index, i)
+            if start_index + i + 1 < end_index:
+                self.algorithm(start_index + i + 1, end_index)
 
 
-def quick_sort(array):
-    if array:
-        pivot = array[len(array) - 1]
-        i = - 1
-        for j in range(0, len(array) - 1 + 1):
-            if array[j] < pivot:
-                i += 1
-                array[i], array[j] = array[j], array[i]
-        array[i + 1], array[len(array) - 1] = array[len(array) - 1], array[i + 1]
-        array[:i + 1] = quick_sort(array[:i + 1])
-        array[i + 2:] = quick_sort(array[i + 2:])
-    return array
+# class QuickSort(Algorithm):
+#
+#     def __init__(self):
+#         super(QuickSort, self).__init__("QuickSort")
+#
+#     def algorithm(self):
+#         if array:
+#             pivot = array[len(array) - 1]
+#             i = - 1
+#             for j in range(0, len(array) - 1 + 1):
+#                 if array[j] < pivot:
+#                     i += 1
+#                     array[i], array[j] = array[j], array[i]
+#             array[i + 1], array[len(array) - 1] = array[len(array) - 1], array[i + 1]
+#             array[:i + 1] = quick_sort(array[:i + 1])
+#             array[i + 2:] = quick_sort(array[i + 2:])
 
 
 def heap_sort(array):
@@ -138,11 +158,10 @@ def generate_array(max_number, size):
 
 if __name__ == '__main__':
 
-    test_case = generate_array(100, 1000)
-    # test_case = [67, 46, 14, 14, 10, 83, 11, 93, 10, 15]
-    print(test_case)
-    sorted_test_case = sorted(test_case)
-    sorted_array = quick_sort(test_case)
-    print(sorted_array)
-    print(sorted_test_case)
-    print(sorted_array == sorted_test_case)
+    algo = QuickSort()
+    print(algo.array)
+    x = sorted(algo.array)
+    print(sorted(x))
+    algo.algorithm()
+    print(algo.array)
+    print(algo.array == x)

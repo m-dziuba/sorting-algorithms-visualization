@@ -1,6 +1,6 @@
 import pygame
 import sys
-from sorting_algorithms import MergeSort, BubbleSort
+from sorting_algorithms import QuickSort  # SelectionSort, BubbleSort
 
 pygame.init()
 # WINDOW DIMENSIONS
@@ -47,7 +47,7 @@ def check_events(array, algorithm):
 
 
 def update(array):
-    pygame.time.wait(25)
+    pygame.time.wait(1)
     draw_bars(array)
     pygame.display.update()
 
@@ -55,7 +55,7 @@ def update(array):
 def main():
     run = True
     clock = pygame.time.Clock()
-    algo = BubbleSort()
+    algo = QuickSort()
     array = algo.array
     while run:
         WIN.fill(WHITE)
