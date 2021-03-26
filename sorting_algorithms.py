@@ -12,7 +12,9 @@ class Algorithm(object):
         self.array = self.generate_array()
 
     def generate_array(self):
-        self.array = random.sample(range(800), 512)
+        self.array = random.sample(range(1024), 1024)
+        # self.array = [513, 408, 199, 100, 73, 642, 190, 696]
+
         self.update_display()
         return self.array
 
@@ -113,38 +115,19 @@ class QuickSort(Algorithm):
     def algorithm(self, start_index=None, end_index=None):
         if start_index is None:
             start_index, end_index = 0, len(self.array) - 1
-        if end_index - start_index != 0:
+        if end_index - start_index > 0:
             pivot = self.array[end_index]
-            i = - 1
+            i = start_index
             for j in range(start_index, end_index):
                 if self.array[j] < pivot:
                     i += 1
-                    self.array[i + start_index], self.array[j] = self.array[j], self.array[i + start_index]
+                    self.array[i - 1], self.array[j] = self.array[j], self.array[i - 1]
                     self.update_display()
-            self.array[start_index + i + 1], self.array[end_index] = self.array[end_index], self.array[start_index + i + 1]
+            self.array[i], self.array[end_index] = self.array[end_index], self.array[i]
             self.update_display()
 
-            self.algorithm(start_index, i)
-            if start_index + i + 1 < end_index:
-                self.algorithm(start_index + i + 1, end_index)
-
-
-# class QuickSort(Algorithm):
-#
-#     def __init__(self):
-#         super(QuickSort, self).__init__("QuickSort")
-#
-#     def algorithm(self):
-#         if array:
-#             pivot = array[len(array) - 1]
-#             i = - 1
-#             for j in range(0, len(array) - 1 + 1):
-#                 if array[j] < pivot:
-#                     i += 1
-#                     array[i], array[j] = array[j], array[i]
-#             array[i + 1], array[len(array) - 1] = array[len(array) - 1], array[i + 1]
-#             array[:i + 1] = quick_sort(array[:i + 1])
-#             array[i + 2:] = quick_sort(array[i + 2:])
+            self.algorithm(start_index, i - 1)
+            self.algorithm(i + 1, end_index)
 
 
 def heap_sort(array):
