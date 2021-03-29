@@ -6,7 +6,7 @@ import visualizer
 
 class Algorithm:
 
-    def __init__(self, name, array=None):
+    def __init__(self, name):
         self.name = name
         self.start_time = time.time()
         self.time_elapsed = time.time() - self.start_time
@@ -156,10 +156,6 @@ class CountingSort(Algorithm):
                     self.array[k] = i
                     self.update_display(self.array[k])
                     k += 1
-
-
-# class HeapSort(Algorithm):
-#     pass
 
 
 def generate_array(max_number, size):

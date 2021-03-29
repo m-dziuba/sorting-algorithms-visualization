@@ -79,7 +79,6 @@ class Button:
     def mouse_click(self, algorithm):
         pos = pygame.mouse.get_pos()
         if self.rect.collidepoint(*pos):
-            # print(self.name)
             return eval(self.name)
         return algorithm
 
@@ -133,7 +132,6 @@ def draw_bars(array, inspected=None, compared_1=None, compared_2=None):
 
 
 def update(array, inspected=None, compared_1=None, compared_2=None, elapsed_time=None):
-    # pygame.time.wait(1)
     draw_bars(array, inspected, compared_1, compared_2)
     pygame.display.set_caption(f"Sorting visualizer     {elapsed_time}")
     pygame.display.update()
