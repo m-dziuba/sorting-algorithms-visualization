@@ -103,9 +103,13 @@ def check_events(array, algorithm, click):
 
 
 def draw_bars(array, inspected=None, compared_1=None, compared_2=None):
-    pygame.draw.rect(WIN, WHITE, VISUALIZER_RECT)
+    # pygame.draw.rect(WIN, WHITE, VISUALIZER_RECT)
     pos_x = VISUALIZER_WIDTH // len(array)
     for i in range(len(array)):
+        pygame.draw.line(WIN, WHITE,
+                         (pos_x * i, WINDOW_HEIGHT),
+                         (pos_x * i, MENU_HEIGHT),
+                         VISUALIZER_WIDTH // len(array))
         if array[i] == inspected:
             pygame.draw.line(WIN, INSPECTED_COLOUR,
                              (pos_x * i, WINDOW_HEIGHT),
