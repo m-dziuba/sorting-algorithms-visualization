@@ -1,7 +1,5 @@
-import numpy as np
 import random
 import time
-import visualizer
 
 
 class Algorithm:
@@ -15,7 +13,6 @@ class Algorithm:
     def generate_array(self):
         self.array = random.sample(range(1024), 1024)
         # self.array = [513, 408, 199, 100, 73, 642, 190, 696]
-
         self.update_display()
         return self.array
 
@@ -23,6 +20,7 @@ class Algorithm:
         self.start_time = time.time()
 
     def update_display(self, inspected=None, compared_1=None, compared_2=None):
+        import visualizer
         self.time_elapsed = time.time() - self.start_time
         visualizer.update(self.array, inspected, compared_1, compared_2, self.time_elapsed)
 
@@ -133,7 +131,6 @@ class CountingSort(Algorithm):
         super(CountingSort, self).__init__("CountingSort")
 
     def algorithm(self):
-        self.set_start_time()
         max_number = 0
         for i in self.array:
             if i > max_number:
@@ -152,15 +149,10 @@ class CountingSort(Algorithm):
                     k += 1
 
 
-def generate_array(max_number, size):
-
-    return [np.random.randint(max_number, size=size)[i] for i in range(size)]
-
-
 if __name__ == '__main__':
     pass
-    # algo = CountingSort()
-    # print(algo.array)
+    # algo = SelectionSort()
+
     # x = sorted(algo.array)
     # print(sorted(x))
     # algo.algorithm()
