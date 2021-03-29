@@ -83,7 +83,7 @@ class Button:
         return algorithm
 
 
-def check_events(array, algorithm, click):
+def check_events(algorithm, click):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -93,52 +93,49 @@ def check_events(array, algorithm, click):
                 pygame.quit()
                 sys.exit(0)
             elif event.key == pygame.K_r:
-                array = algorithm.generate_array()
+                algorithm.generate_array()
             elif event.key == pygame.K_RETURN:
                 algorithm.algorithm()
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 click = True
-    return array, click
+    return click
 
 
-def draw_bars(array, inspected=None, compared_1=None, compared_2=None):
-    # pygame.draw.rect(WIN, WHITE, VISUALIZER_RECT)
-    pos_x = VISUALIZER_WIDTH // len(array)
-    for i in range(len(array)):
-        pygame.draw.line(WIN, WHITE,
-                         (pos_x * i, WINDOW_HEIGHT),
-                         (pos_x * i, MENU_HEIGHT),
-                         VISUALIZER_WIDTH // len(array))
-        if array[i] == inspected:
-            pygame.draw.line(WIN, INSPECTED_COLOUR,
-                             (pos_x * i, WINDOW_HEIGHT),
-                             (pos_x * i, WINDOW_HEIGHT - array[i] * VISUALIZER_HEIGHT // max(array)),
-                             VISUALIZER_WIDTH // len(array))
-            inspected = None
-        elif array[i] == compared_1:
-            pygame.draw.line(WIN, COMPARED_COLOUR,
-                             (pos_x * i, WINDOW_HEIGHT),
-                             (pos_x * i, WINDOW_HEIGHT - array[i] * VISUALIZER_HEIGHT // max(array)),
-                             VISUALIZER_WIDTH // len(array))
-            compared_1 = None
-        elif array[i] == compared_2:
-            pygame.draw.line(WIN, COMPARED_COLOUR,
-                             (pos_x * i, WINDOW_HEIGHT),
-                             (pos_x * i, WINDOW_HEIGHT - array[i] * VISUALIZER_HEIGHT // max(array)),
-                             VISUALIZER_WIDTH // len(array))
-            compared_1 = None
-        else:
-            pygame.draw.line(WIN, BASE_COLOUR,
-                             (pos_x * i, WINDOW_HEIGHT),
-                             (pos_x * i, WINDOW_HEIGHT - array[i] * VISUALIZER_HEIGHT // max(array)),
-                             VISUALIZER_WIDTH // len(array))
+def draw_one_bar(bar_width, i, array, colour):
+    pygame.draw.line(WIN, WHITE,
+                     (bar_width * i, WINDOW_HEIGHT),
+                     (bar_width * i, MENU_HEIGHT),
+                     bar_width)
+    pygame.draw.line(WIN, colour,
+                     (bar_width * i, WINDOW_HEIGHT),
+                     (bar_width * i, WINDOW_HEIGHT - array[i] * VISUALIZER_HEIGHT // 1024),
+                     bar_width)
 
 
-def update(array, inspected=None, compared_1=None, compared_2=None, elapsed_time=None):
-    draw_bars(array, inspected, compared_1, compared_2)
+def draw_bars(array, bar_width, start=None, end=None, inspected=None, compared=(None, None)):
+
+    if start is not None and end is not None:
+        for i in range(start, end):
+            if i == inspected:
+                colour = INSPECTED_COLOUR
+            elif i in compared:
+                colour = COMPARED_COLOUR
+            else:
+                colour = BASE_COLOUR
+            draw_one_bar(bar_width, i, array, colour)
+
+    else:
+        for i in range(len(array)):
+            draw_one_bar(bar_width, i, array, colour=BASE_COLOUR)
+            pygame.display.update((bar_width * i, MENU_HEIGHT, bar_width, VISUALIZER_HEIGHT))
+
+
+def update(array, bar_width, start, end, inspected, compared, elapsed_time=None):
+    draw_bars(array, bar_width, start, end, inspected, compared)
     pygame.display.set_caption(f"Sorting visualizer     {elapsed_time}")
-    pygame.display.update()
+    pygame.display.update((bar_width * start, MENU_HEIGHT, bar_width * (end - start), VISUALIZER_HEIGHT))
+    # pygame.time.delay(100)
 
 
 def get_all_algorithms(cls):
@@ -147,13 +144,13 @@ def get_all_algorithms(cls):
 
 
 def main():
-    run = True
     clock = pygame.time.Clock()
     all_algorithms = get_all_algorithms(Algorithm)
     algo = Algorithm("algo")
     click = False
     buttons = []
-    while run:
+    bar_width = VISUALIZER_WIDTH // algo.array_length
+    while True:
         clock.tick(FPS)
         WIN.fill(WHITE)
 
@@ -163,11 +160,9 @@ def main():
             buttons.append(button)
             if click:
                 algo = button.mouse_click(algo)
-
         click = False
-        algo.array, click = check_events(algo.array, algo, click)
-        draw_bars(algo.array)
-
+        click = check_events(algo, click)
+        draw_bars(algo.array, bar_width)
         pygame.display.update()
 
 
