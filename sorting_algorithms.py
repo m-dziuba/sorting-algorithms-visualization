@@ -1,11 +1,12 @@
 import numpy as np
 import random
 import time
+import visualizer
 
 
-class Algorithm(object):
+class Algorithm:
 
-    def __init__(self, name):
+    def __init__(self, name, array=None):
         self.name = name
         self.start_time = time.time()
         self.time_elapsed = time.time() - self.start_time
@@ -21,9 +22,15 @@ class Algorithm(object):
     def run(self):
         return self.array, self.time_elapsed
 
-    def update_display(self):
-        import visualizer
-        visualizer.update(self.array)
+    def set_start_time(self):
+        self.start_time = time.time()
+
+    def get_elapsed_time(self):
+        self.time_elapsed = time.time() - self.start_time
+
+    def update_display(self, inspected=None, compared_1=None, compared_2=None):
+        self.time_elapsed = time.time() - self.start_time
+        visualizer.update(self.array, inspected, compared_1, compared_2, self.time_elapsed)
 
 
 class SelectionSort(Algorithm):
@@ -31,18 +38,14 @@ class SelectionSort(Algorithm):
     def __init__(self):
         super(SelectionSort, self).__init__("SelectionSort")
 
-    def print_array(self):
-        print(self.array)
-
     def algorithm(self):
-        array_length = len(self.array)
-        for i in range(array_length):
+        for i in range(len(self.array)):
             min_index = i
             for j in range(i + 1, len(self.array)):
                 if self.array[min_index] > self.array[j]:
                     min_index = j
+            self.update_display(self.array[i], self.array[min_index])
             self.array[i], self.array[min_index] = self.array[min_index], self.array[i]
-            self.update_display()
 
 
 class BubbleSort(Algorithm):
@@ -56,11 +59,11 @@ class BubbleSort(Algorithm):
         while swapping:
             swapping = False
             for i in range(len(self.array) - passes - 1):
+                self.update_display(self.array[i], self.array[i + 1])
                 if self.array[i] > self.array[i + 1]:
                     self.array[i], self.array[i + 1] = self.array[i + 1], self.array[i]
                     swapping = True
             passes += 1
-            self.update_display()
 
 
 class InsertionSort(Algorithm):
@@ -71,6 +74,7 @@ class InsertionSort(Algorithm):
     def algorithm(self):
         for i in range(1, len(self.array)):
             for j in range(i - 1, -1, -1):
+                self.update_display(self.array[i], self.array[j])
                 if self.array[i] > self.array[j]:
                     break
                 elif self.array[i] < self.array[j] and j == 0:
@@ -79,7 +83,6 @@ class InsertionSort(Algorithm):
                 elif self.array[j] > self.array[i] >= self.array[j - 1]:
                     self.array.insert(j, self.array[i])
                     del self.array[i + 1]
-            self.update_display()
 
 
 class MergeSort(Algorithm):
@@ -97,6 +100,7 @@ class MergeSort(Algorithm):
             i = j = 0
             for k in range(start_index, end_index - 1):
                 if i + 1 < len(self.array[start_index: end_index]) and j * 2 < len(self.array[start_index: end_index]):
+                    self.update_display(self.array[k], self.array[start_index + i], self.array[middle_index + j])
                     if self.array[start_index + i] < self.array[middle_index + j]:
                         i += 1
                     else:
@@ -104,7 +108,6 @@ class MergeSort(Algorithm):
                         i += 1
                         j += 1
                         del self.array[middle_index + j]
-                    self.update_display()
 
 
 class QuickSort(Algorithm):
@@ -122,16 +125,41 @@ class QuickSort(Algorithm):
                 if self.array[j] < pivot:
                     i += 1
                     self.array[i - 1], self.array[j] = self.array[j], self.array[i - 1]
-                    self.update_display()
+                    self.update_display(pivot, self.array[i - 1], self.array[j])
             self.array[i], self.array[end_index] = self.array[end_index], self.array[i]
-            self.update_display()
+            self.update_display(self.array[i], self.array[end_index])
 
             self.algorithm(start_index, i - 1)
             self.algorithm(i + 1, end_index)
 
 
-def heap_sort(array):
-    return array
+class CountingSort(Algorithm):
+    
+    def __init__(self):
+        super(CountingSort, self).__init__("CountingSort")
+
+    def algorithm(self):
+        self.set_start_time()
+        max_number = 0
+        for i in self.array:
+            if i > max_number:
+                max_number = i
+
+        counting_range = [0] * (max_number + 1)
+        for i in self.array:
+            self.update_display(i)
+            counting_range[i] += 1
+        k = 0
+        for i in range(len(counting_range)):
+            if counting_range[i] != 0:
+                for j in range(counting_range[i]):
+                    self.array[k] = i
+                    self.update_display(self.array[k])
+                    k += 1
+
+
+# class HeapSort(Algorithm):
+#     pass
 
 
 def generate_array(max_number, size):
@@ -140,11 +168,11 @@ def generate_array(max_number, size):
 
 
 if __name__ == '__main__':
-
-    algo = QuickSort()
-    print(algo.array)
-    x = sorted(algo.array)
-    print(sorted(x))
-    algo.algorithm()
-    print(algo.array)
-    print(algo.array == x)
+    pass
+    # algo = CountingSort()
+    # print(algo.array)
+    # x = sorted(algo.array)
+    # print(sorted(x))
+    # algo.algorithm()
+    # print(algo.array)
+    # print(algo.array == x)
