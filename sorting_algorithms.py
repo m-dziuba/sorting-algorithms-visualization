@@ -19,14 +19,8 @@ class Algorithm:
         self.update_display()
         return self.array
 
-    def run(self):
-        return self.array, self.time_elapsed
-
     def set_start_time(self):
         self.start_time = time.time()
-
-    def get_elapsed_time(self):
-        self.time_elapsed = time.time() - self.start_time
 
     def update_display(self, inspected=None, compared_1=None, compared_2=None):
         self.time_elapsed = time.time() - self.start_time
