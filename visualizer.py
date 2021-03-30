@@ -102,33 +102,34 @@ def check_events(algorithm, click):
     return click
 
 
-def draw_one_bar(bar_width, i, array, colour):
-    pygame.draw.line(WIN, WHITE,
-                     (bar_width * i, WINDOW_HEIGHT),
-                     (bar_width * i, MENU_HEIGHT),
-                     bar_width)
-    pygame.draw.line(WIN, colour,
-                     (bar_width * i, WINDOW_HEIGHT),
-                     (bar_width * i, WINDOW_HEIGHT - array[i] * VISUALIZER_HEIGHT // 1024),
-                     bar_width)
-
-
-def draw_bars(array, bar_width, start=None, end=None, inspected=None, compared=(None, None)):
-
-    if start is not None and end is not None:
-        for i in range(start, end):
-            if i == inspected:
-                colour = INSPECTED_COLOUR
-            elif i in compared:
-                colour = COMPARED_COLOUR
-            else:
-                colour = BASE_COLOUR
-            draw_one_bar(bar_width, i, array, colour)
-
+def draw_one_bar(i, bar_width, array, mode=None):
+    # offset = VISUALIZER_WIDTH // len(array) // 2
+    if mode == "inspected":
+        colour = INSPECTED_COLOUR
+    elif mode == "compared":
+        colour = COMPARED_COLOUR
     else:
-        for i in range(len(array)):
-            draw_one_bar(bar_width, i, array, colour=BASE_COLOUR)
-            pygame.display.update((bar_width * i, MENU_HEIGHT, bar_width, VISUALIZER_HEIGHT))
+        colour = BASE_COLOUR
+
+    pygame.draw.line(WIN, WHITE,
+                     (bar_width * (i + 0.5), WINDOW_HEIGHT),
+                     (bar_width * (i + 0.5), MENU_HEIGHT + 0.5 * BORDER_WIDTH),
+                     bar_width + 1)
+    pygame.draw.line(WIN, colour,
+                     (bar_width * (i + 0.5), WINDOW_HEIGHT),
+                     (bar_width * (i + 0.5), WINDOW_HEIGHT - array[i] * VISUALIZER_HEIGHT // VISUALIZER_WIDTH),
+                     bar_width + 1)
+
+
+def draw_bars(array, bar_width, start=0, end=1024, inspected=None, compared=(None, None)):
+    for i in range(start, end):
+        if i == inspected:
+            mode = "inspected"
+        elif i in compared:
+            mode = "compared"
+        else:
+            mode = "base"
+        draw_one_bar(i, bar_width, array, mode)
 
 
 def update(array, bar_width, start, end, inspected, compared, elapsed_time=None):
@@ -136,6 +137,13 @@ def update(array, bar_width, start, end, inspected, compared, elapsed_time=None)
     pygame.display.set_caption(f"Sorting visualizer     {elapsed_time}")
     pygame.display.update((bar_width * start, MENU_HEIGHT, bar_width * (end - start), VISUALIZER_HEIGHT))
     # pygame.time.delay(100)
+
+
+def update_one_bar(bar, array, bar_width, mode=None, elapsed_time=None):
+    draw_one_bar(bar, bar_width, array, mode)
+    # pygame.display.set_caption(f"Sorting visualizer     {elapsed_time}")
+    pygame.display.update((bar_width * bar, MENU_HEIGHT, bar_width, VISUALIZER_HEIGHT))
+    pygame.time.delay(25)
 
 
 def get_all_algorithms(cls):
@@ -162,7 +170,7 @@ def main():
                 algo = button.mouse_click(algo)
         click = False
         click = check_events(algo, click)
-        draw_bars(algo.array, bar_width)
+        draw_bars(algo.array, bar_width, 0, algo.array_length)
         pygame.display.update()
 
 
