@@ -51,7 +51,7 @@ COMMAND_BUTTONS_RECTS = {"play": (BUTTON_WIDTH + BUTTON_SPACING, 0, 64, 64),
 
 # MAIN MENU
 MAIN_MENU_HEIGHT = BUTTON_HEIGHT
-MAIN_MENU = (0, 0, VISUALIZER_WIDTH, MAIN_MENU_HEIGHT)
+MAIN_MENU = (0, 0, VISUALIZER_WIDTH, MAIN_MENU_HEIGHT + BUTTONS_BORDER_WIDTH)
 
 # BUTTONS MENU
 BUTTONS_MENU_HEIGHT = BUTTON_HEIGHT * (1 + BUTTONS_TOTAL_NO //
@@ -130,7 +130,13 @@ class CommandButton:
             return True
 
 
-def draw_one_bar(i, array, mode=None):
+class InputBox:
+
+    def __init__(self, name):
+        self.name = name
+
+
+def draw_one_bar(bar, array, mode=None, single_bar=True):
     if mode == "inspected":
         colour = INSPECTED_COLOUR
     elif mode == "compared":
@@ -139,18 +145,22 @@ def draw_one_bar(i, array, mode=None):
         colour = BASE_COLOUR
 
     pygame.draw.line(WIN, WHITE,
-                     (BAR_WIDTH * (i + 0.5), WINDOW_HEIGHT),
-                     (BAR_WIDTH * (i + 0.5), BUTTON_HEIGHT + 0.5 * BUTTONS_BORDER_WIDTH),
+                     (BAR_WIDTH * (bar + 0.5), WINDOW_HEIGHT),
+                     (BAR_WIDTH * (bar + 0.5), BUTTON_HEIGHT + 0.5 * BUTTONS_BORDER_WIDTH),
                      BAR_WIDTH + 1)
     pygame.draw.line(WIN, colour,
-                     (BAR_WIDTH * (i + 0.5), WINDOW_HEIGHT),
-                     (BAR_WIDTH * (i + 0.5), WINDOW_HEIGHT - array[i] * VISUALIZER_HEIGHT // VISUALIZER_WIDTH),
+                     (BAR_WIDTH * (bar + 0.5), WINDOW_HEIGHT),
+                     (BAR_WIDTH * (bar + 0.5), WINDOW_HEIGHT - array[bar] * VISUALIZER_HEIGHT // VISUALIZER_WIDTH),
                      BAR_WIDTH + 1)
+    if single_bar:
+        pygame.display.update((BAR_WIDTH * bar, MAIN_MENU_HEIGHT, BAR_WIDTH, VISUALIZER_HEIGHT))
 
 
 def draw_bars(array, start=0, end=1024):
     for i in range(start, end):
-        draw_one_bar(i, array, "base")
+        draw_one_bar(i, array, single_bar=False)
+    pygame.display.update((BAR_WIDTH * start, MAIN_MENU_HEIGHT,
+                           BAR_WIDTH * (end - start), VISUALIZER_HEIGHT))
 
 
 def draw_main_menu(algorithm):
@@ -164,72 +174,10 @@ def draw_sort_menu(all_algorithms):
         SortButton(algorithms[0], index, text=algorithms[1]).draw()
 
 
-def update(array, start, end):
-    draw_bars(array, start, end)
-    pygame.display.update((BAR_WIDTH * start, MAIN_MENU_HEIGHT,
-                           BAR_WIDTH * (end - start), VISUALIZER_HEIGHT))
-
-
-def update_one_bar(bar, array, mode=None):
-    draw_one_bar(bar, array, mode)
-    pygame.display.update((BAR_WIDTH * bar, MAIN_MENU_HEIGHT, BAR_WIDTH, VISUALIZER_HEIGHT))
-
-
 def get_all_algorithms(cls):
     all_algorithms = [(f"{subclass.__name__}()", f"{subclass.__name__[:-4]} Sort")
                       for subclass in cls.__subclasses__()]
     return all_algorithms
-
-
-def check_events(algorithm, click):
-    pause = False
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit(0)
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                pygame.quit()
-                sys.exit(0)
-            elif event.key == pygame.K_r:
-                algorithm.generate_array()
-            elif event.key == pygame.K_RETURN:
-                algorithm.algorithm()
-            elif event.key == pygame.K_SPACE:
-                pause = True
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:
-                click = True
-        for action_button in COMMAND_BUTTONS:
-            button = CommandButton(action_button)
-            if click:
-                if button.name == "stop" and button.mouse_click():
-                    pause = True
-                elif button.name == "play" and button.mouse_click():
-                    algorithm.algorithm()
-
-    while pause:
-        pause_click = False
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit(0)
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit(0)
-                elif event.key == pygame.K_SPACE:
-                    pause = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    pause_click = True
-            for action_button in COMMAND_BUTTONS:
-                button = CommandButton(action_button)
-                if pause_click:
-                    if button.name == "play" and button.mouse_click():
-                        pause = False
-
-    return click
 
 
 def basic_check_event(click, event):
@@ -334,10 +282,11 @@ def main():
     all_algorithms = get_all_algorithms(Algorithm)
     algorithm = SelectionSort()
     algorithm.generate_array()
+    WIN.fill(WHITE)
+    draw_bars(algorithm.array)
     while True:
         clock.tick(FPS)
-        WIN.fill(WHITE)
-        draw_bars(algorithm.array, 0, algorithm.array_length)
+        pygame.draw.rect(WIN, WHITE, MAIN_MENU)
         draw_main_menu(algorithm)
         for event in pygame.event.get():
             algorithm = check_events_while_in_main_menu(algorithm, event, all_algorithms)

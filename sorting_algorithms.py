@@ -28,13 +28,13 @@ class Algorithm:
         import visualizer
         self.time_elapsed = time.time() - self.start_time
         visualizer.check_events_while_running()
-        visualizer.update(self.array, start, end)
+        visualizer.draw_bars(self.array, start, end)
 
     def update_one_bar(self, bar=None, mode=None):
         import visualizer
         self.time_elapsed = time.time() - self.start_time
         visualizer.check_events_while_running()
-        visualizer.update_one_bar(bar, self.array, mode)
+        visualizer.draw_one_bar(bar, self.array, mode)
 
 
 class SelectionSort(Algorithm):
