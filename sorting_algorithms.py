@@ -7,12 +7,12 @@ class Algorithm:
         self.name = name
         self.start_time = time.time()
         self.time_elapsed = time.time() - self.start_time
-        self.array = random.sample(range(1024), 128)
+        self.array = [random.randint(0, 1000) for i in range(1024)]
         self.array_length = len(self.array)
         self.bar_width = 1024 // self.array_length
 
     def generate_array(self):
-        self.array = random.sample(range(1024), 128)
+        self.array = [random.randint(0, 800) for i in range(1024)]
         # self.array = [513, 408, 199, 100, 73, 642, 190, 696]
         self.array_length = len(self.array)
         self.bar_width = 1024 // self.array_length
@@ -22,17 +22,17 @@ class Algorithm:
     def set_start_time(self):
         self.start_time = time.time()
 
-    def update_display(self, start=0, end=128, inspected=None, compared=(None, None)):
+    def update_display(self, start=0, end=1024, inspected=None, compared=(None, None)):
         import visualizer
         self.time_elapsed = time.time() - self.start_time
         visualizer.check_events(self, None)
-        visualizer.update(self.array, self.bar_width, start, end, inspected, compared, self.time_elapsed)
+        visualizer.update(self.array, self.bar_width, start, end, inspected, compared)
 
     def update_one_bar(self, bar=None, mode=None):
         import visualizer
         self.time_elapsed = time.time() - self.start_time
         visualizer.check_events(self, None)
-        visualizer.update_one_bar(bar, self.array, self.bar_width, mode, self.time_elapsed)
+        visualizer.update_one_bar(bar, self.array, self.bar_width, mode)
 
 
 class SelectionSort(Algorithm):
