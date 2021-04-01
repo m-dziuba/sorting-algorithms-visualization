@@ -1,5 +1,6 @@
 import pygame
 import sys
+# from config import DELAY, change_delay, printdelay
 from sorting_algorithms import *
 
 pygame.init()
@@ -256,6 +257,7 @@ def draw_one_bar(bar, array, mode=None, single_bar=True):
                      (BAR_WIDTH * (bar + 0.5), WINDOW_HEIGHT - array[bar] * VISUALIZER_HEIGHT // VISUALIZER_WIDTH),
                      BAR_WIDTH + 1)
     if single_bar:
+        # from config import DELAY
         pygame.display.update((BAR_WIDTH * bar, MAIN_MENU_HEIGHT, BAR_WIDTH, VISUALIZER_HEIGHT))
         pygame.time.delay(DELAY)
 
@@ -269,6 +271,7 @@ def draw_bars(array, array_length, start=0, end=None):
         draw_one_bar(i, array, single_bar=False)
     pygame.display.update((BAR_WIDTH * start, MAIN_MENU_HEIGHT,
                            BAR_WIDTH * (end - start), VISUALIZER_HEIGHT))
+    # from config import DELAY    # TODO tak nie może być
     pygame.time.delay(DELAY)
 
 
@@ -357,6 +360,7 @@ def check_events_while_in_sort_menu(algorithm, all_algorithms, event):
 
 
 def check_events_while_in_main_menu(algorithm, event, all_algorithms, array_size, delay_input_box):
+    global DELAY
     click = basic_check_event(event)
     if event.type == pygame.KEYDOWN:
         if event.key == pygame.K_r:
@@ -366,16 +370,18 @@ def check_events_while_in_main_menu(algorithm, event, all_algorithms, array_size
     elif click and SortButton(algorithm.name, 0, text=f"{algorithm.name[0:-4]} Sort").menu_mouse_click():
         return sort_menu(algorithm, all_algorithms)
     elif delay_input_box.mouse_click(click):
-        global DELAY
         delay_input_box.handle_event()
-        DELAY = int(delay_input_box.text)
+        DELAY = (int(delay_input_box.text))
+
     else:
         for action_button in COMMAND_BUTTONS:
             button = CommandButton(action_button)
             if button.name == "play" and button.mouse_click(click):
                 algorithm.algorithm()
             elif button.name == "reload" and button.mouse_click(click):
+                DELAY = 0
                 algorithm.generate_array()
+                DELAY = int(delay_input_box.text)
             elif button.name == "left" and button.mouse_click(click):
                 algorithm = array_size.decrease(algorithm)
             elif button.name == "right" and button.mouse_click(click):
@@ -413,6 +419,7 @@ def main():
         for event in pygame.event.get():
             algorithm = check_events_while_in_main_menu(algorithm, event, all_algorithms, array_size, delay_input_box)
         pygame.display.update()
+        print(DELAY)
 
 
 if __name__ == '__main__':
