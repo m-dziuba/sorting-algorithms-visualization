@@ -44,8 +44,8 @@ COMMAND_BUTTONS_RECTS = {"play": (BUTTON_WIDTH + BUTTON_SPACING, 0, 64, 64),
                          "pause": (BUTTON_WIDTH + BUTTON_SPACING, 0, 64, 64),
                          "reload": (BUTTON_WIDTH + BUTTON_SPACING * 4, 0, 64, 64),
                          "stop": (BUTTON_WIDTH + BUTTON_SPACING * 4, 0, 64, 64),
-                         "left": (BUTTON_WIDTH + BUTTON_SPACING * 10, 0, 64, 64),
-                         "right": (BUTTON_WIDTH + BUTTON_SPACING * 16, 0, 64, 64),
+                         "left": (BUTTON_WIDTH + BUTTON_SPACING * 7, 0, 64, 64),
+                         "right": (BUTTON_WIDTH + BUTTON_SPACING * 13 + 4, 0, 64, 64),
                          }
 
 
@@ -65,6 +65,7 @@ WIN = pygame.display.set_mode((VISUALIZER_WIDTH, WINDOW_HEIGHT))
 VISUALIZER_RECT = pygame.Rect(0, MAIN_MENU_HEIGHT, VISUALIZER_WIDTH, VISUALIZER_HEIGHT)
 pygame.display.set_caption("Sorting visualizer")
 
+
 # ---------------- SORTING_ALGORITHMS ---------------- #
 ARRAY_LENGTH = 1024
 BAR_WIDTH = ARRAY_LENGTH // VISUALIZER_WIDTH
@@ -83,9 +84,8 @@ class SortButton:
         self.font = pygame.font.Font(font, font_size)
         self.column = button_number % BUTTONS_LIMIT_PER_ROW
         self.row = button_number // BUTTONS_LIMIT_PER_ROW
-        self.placement_and_size = (self.column * BUTTON_WIDTH, self.row * BUTTON_HEIGHT,
-                                   BUTTON_WIDTH, BUTTON_HEIGHT)
-        self.rect = pygame.Rect(self.placement_and_size)
+        self.rect = pygame.Rect(self.column * BUTTON_WIDTH, self.row * BUTTON_HEIGHT,
+                                BUTTON_WIDTH, BUTTON_HEIGHT)
 
     def draw(self):
         self.mouseover()
@@ -132,8 +132,59 @@ class CommandButton:
 
 class InputBox:
 
-    def __init__(self, name):
+    def __init__(self, name, sth="1024"):
         self.name = name
+        self.rect = pygame.Rect(BUTTON_WIDTH + BUTTON_SPACING * 9, 0, BUTTON_SPACING * 4, 64)
+        self.current_colour = BLACK
+        self.secondary_colour = GREEN
+        self.pos = pygame.mouse.get_pos()
+        self.text_list = [number for number in sth]
+        self.font = pygame.font.Font(BUTTONS_FONTS, BUTTONS_FONT_SIZE)
+        self.text = "".join(number for number in self.text_list)
+
+    def draw(self):
+        self.mouseover()
+        pygame.draw.rect(WIN, WHITE, self.rect)
+        pygame.draw.rect(WIN, self.current_colour, self.rect, 2)
+
+        if self.text:
+            text_obj = self.font.render(self.text, True, self.current_colour)
+            text_rect = text_obj.get_rect()
+            text_rect.center = (BUTTON_WIDTH + BUTTON_SPACING * 9 + BUTTON_SPACING * 4//2, 64//2)
+            WIN.blit(text_obj, text_rect)
+        pygame.display.update(self.rect)
+
+    def mouseover(self):
+        if self.rect.collidepoint(*self.pos):
+            self.current_colour = self.secondary_colour
+
+    def mouse_click(self, click=False):
+        if self.rect.collidepoint(*self.pos) and click:
+            return True
+
+    def handle_event(self):
+        active = True
+        while active:
+            for event in pygame.event.get():
+                basic_check_event(event)
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.rect.collidepoint(*self.pos):
+                        active = not active
+                    else:
+                        active = False
+                    self.current_colour = GREY if active else BLACK
+                if event.type == pygame.KEYDOWN and active:
+                    if event.key == pygame.K_RETURN:
+                        active = False
+                    elif event.key == pygame.K_BACKSPACE:
+                        self.text_list = self.text_list[:-1]
+                        self.text = "".join(number for number in self.text_list)
+                        self.draw()
+                    else:
+                        self.text_list += event.unicode
+                        self.text = "".join(number for number in self.text_list)
+                    self.draw()
+        return self
 
 
 def draw_one_bar(bar, array, mode=None, single_bar=True):
@@ -163,10 +214,11 @@ def draw_bars(array, start=0, end=1024):
                            BAR_WIDTH * (end - start), VISUALIZER_HEIGHT))
 
 
-def draw_main_menu(algorithm):
+def draw_main_menu(algorithm, array_size):
     for action_button in COMMAND_BUTTONS:
         CommandButton(action_button).draw()
     SortButton(algorithm.name, 0, text=f"{algorithm.name[0:-4]} Sort").draw()
+    array_size.draw()
 
 
 def draw_sort_menu(all_algorithms):
@@ -180,7 +232,8 @@ def get_all_algorithms(cls):
     return all_algorithms
 
 
-def basic_check_event(click, event):
+def basic_check_event(event):
+    click = False
     if event.type == pygame.QUIT:
         pygame.quit()
         sys.exit(0)
@@ -197,7 +250,7 @@ def basic_check_event(click, event):
 def check_events_while_running():
     pause = False
     for event in pygame.event.get():
-        click = basic_check_event(False, event)
+        click = basic_check_event(event)
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 pause = True
@@ -217,7 +270,7 @@ def check_events_while_running():
 
 def check_events_while_paused():
     for event in pygame.event.get():
-        click = basic_check_event(False, event)
+        click = basic_check_event(event)
         button = CommandButton("play")
         button.draw()
         if button.mouse_click(click):
@@ -230,8 +283,7 @@ def check_events_while_paused():
 
 
 def check_events_while_in_sort_menu(algorithm, all_algorithms, event):
-    click = False
-    click = basic_check_event(click, event)
+    click = basic_check_event(event)
     if event.type == pygame.KEYDOWN:
         if event.key == pygame.K_r:
             algorithm.generate_array()
@@ -245,22 +297,25 @@ def check_events_while_in_sort_menu(algorithm, all_algorithms, event):
     return algorithm, True
 
 
-def check_events_while_in_main_menu(algorithm, event, all_algorithms):
-    click = basic_check_event(False, event)
+def check_events_while_in_main_menu(algorithm, event, all_algorithms, array_size):
+    click = basic_check_event(event)
     if event.type == pygame.KEYDOWN:
         if event.key == pygame.K_r:
             algorithm.generate_array()
         elif event.key == pygame.K_RETURN:
             algorithm.algorithm()
-    if click:
-        if SortButton(algorithm.name, 0, text=f"{algorithm.name[0:-4]} Sort").menu_mouse_click():
-            return sort_menu(algorithm, all_algorithms)
-    for action_button in COMMAND_BUTTONS:
-        button = CommandButton(action_button)
-        if button.name == "play" and button.mouse_click(click):
-            algorithm.algorithm()
-        if button.name == "reload" and button.mouse_click(click):
-            algorithm.generate_array()
+    elif click and SortButton(algorithm.name, 0, text=f"{algorithm.name[0:-4]} Sort").menu_mouse_click():
+        return sort_menu(algorithm, all_algorithms)
+    elif array_size.mouse_click(click):
+        print("aa")
+        array_size.handle_event()
+    else:
+        for action_button in COMMAND_BUTTONS:
+            button = CommandButton(action_button)
+            if button.name == "play" and button.mouse_click(click):
+                algorithm.algorithm()
+            elif button.name == "reload" and button.mouse_click(click):
+                algorithm.generate_array()
     return algorithm
 
 
@@ -284,14 +339,18 @@ def main():
     algorithm.generate_array()
     WIN.fill(WHITE)
     draw_bars(algorithm.array)
+    array_size = InputBox("a")
     while True:
         clock.tick(FPS)
         pygame.draw.rect(WIN, WHITE, MAIN_MENU)
-        draw_main_menu(algorithm)
+        draw_main_menu(algorithm, array_size)
         for event in pygame.event.get():
-            algorithm = check_events_while_in_main_menu(algorithm, event, all_algorithms)
+            algorithm = check_events_while_in_main_menu(algorithm, event, all_algorithms, array_size)
         pygame.display.update()
 
 
 if __name__ == '__main__':
     main()
+
+# TODO review code cleanliness
+# TODO Buttons can be optimized
