@@ -16,7 +16,7 @@ class Algorithm:
 
     def generate_array(self):
         global initial_array
-        self.array = [random.randint(0, 1000) for i in range(1024)]
+        self.array = [random.randint(0, 1000) for i in range(self.array_length)]
         initial_array = self.array
         self.update_display()
         return self.array
@@ -24,7 +24,9 @@ class Algorithm:
     def set_start_time(self):
         self.start_time = time.time()
 
-    def update_display(self, start=0, end=1024):
+    def update_display(self, start=0, end=None):
+        if end is None:
+            end = self.array_length
         import visualizer
         self.time_elapsed = time.time() - self.start_time
         visualizer.check_events_while_running()

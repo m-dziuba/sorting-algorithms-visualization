@@ -67,8 +67,8 @@ pygame.display.set_caption("Sorting visualizer")
 
 
 # ---------------- SORTING_ALGORITHMS ---------------- #
-ARRAY_LENGTH = 1024
-BAR_WIDTH = ARRAY_LENGTH // VISUALIZER_WIDTH
+ARRAY_LENGTH = len(initial_array)
+BAR_WIDTH = VISUALIZER_WIDTH // ARRAY_LENGTH
 
 
 class SortButton:
@@ -143,15 +143,16 @@ class InputBox:
         self.text = "".join(number for number in self.text_list)
 
     def draw(self):
-        self.mouseover()
-        pygame.draw.rect(WIN, WHITE, self.rect)
-        pygame.draw.rect(WIN, self.current_colour, self.rect, 2)
-
-        if self.text:
-            text_obj = self.font.render(self.text, True, self.current_colour)
-            text_rect = text_obj.get_rect()
-            text_rect.center = (BUTTON_WIDTH + BUTTON_SPACING * 9 + BUTTON_SPACING * 4//2, 64//2)
-            WIN.blit(text_obj, text_rect)
+        pass
+    #     self.mouseover()
+    #     pygame.draw.rect(WIN, WHITE, self.rect)
+    #     pygame.draw.rect(WIN, self.current_colour, self.rect, 2)
+    #
+    #     if self.text:
+    #         text_obj = self.font.render(self.text, True, self.current_colour)
+    #         text_rect = text_obj.get_rect()
+    #         text_rect.center = (BUTTON_WIDTH + BUTTON_SPACING * 9 + BUTTON_SPACING * 4//2, 64//2)
+    #         WIN.blit(text_obj, text_rect)
         pygame.display.update(self.rect)
 
     def mouseover(self):
@@ -187,6 +188,49 @@ class InputBox:
         return self
 
 
+class ArraySizeDisplay:
+
+    def __init__(self):
+        self.size = ARRAY_LENGTH
+        self.rect = pygame.Rect(BUTTON_WIDTH + BUTTON_SPACING * 9, 0, BUTTON_SPACING * 4, 64)
+        self.colour = BLACK
+        self.text = str(self.size)
+        self.font = pygame.font.Font(BUTTONS_FONTS, BUTTONS_FONT_SIZE)
+
+    def draw(self):
+        pygame.draw.rect(WIN, WHITE, self.rect)
+        pygame.draw.rect(WIN, self.colour, self.rect, 2)
+        text_obj = self.font.render(self.text, True, self.colour)
+        text_rect = text_obj.get_rect()
+        text_rect.center = (BUTTON_WIDTH + BUTTON_SPACING * 9 + BUTTON_SPACING * 4 // 2, 64 // 2)
+        WIN.blit(text_obj, text_rect)
+        pygame.display.update(self.rect)
+
+    def decrease(self, algorithm):
+        global ARRAY_LENGTH, BAR_WIDTH
+        if self.size > 2:
+            self.size //= 2
+            self.text = str(self.size)
+            ARRAY_LENGTH = self.size
+            BAR_WIDTH = VISUALIZER_WIDTH // ARRAY_LENGTH
+            algorithm.array_length = self.size
+            algorithm.generate_array()
+        self.draw()
+        pygame.display.update()
+
+    def increase(self, algorithm):
+        global ARRAY_LENGTH, BAR_WIDTH
+        if self.size < 1024:
+            self.size *= 2
+            self.text = str(self.size)
+            ARRAY_LENGTH = self.size
+            BAR_WIDTH = VISUALIZER_WIDTH // ARRAY_LENGTH
+            algorithm.array_length = self.size
+            algorithm.generate_array()
+        self.draw()
+        pygame.display.update()
+
+
 def draw_one_bar(bar, array, mode=None, single_bar=True):
     if mode == "inspected":
         colour = INSPECTED_COLOUR
@@ -207,7 +251,11 @@ def draw_one_bar(bar, array, mode=None, single_bar=True):
         pygame.display.update((BAR_WIDTH * bar, MAIN_MENU_HEIGHT, BAR_WIDTH, VISUALIZER_HEIGHT))
 
 
-def draw_bars(array, start=0, end=1024):
+def draw_bars(array, start=0, end=None):
+    if end is None:
+        end = len(array)
+    global BAR_WIDTH, VISUALIZER_WIDTH
+    BAR_WIDTH = VISUALIZER_WIDTH // end
     for i in range(start, end):
         draw_one_bar(i, array, single_bar=False)
     pygame.display.update((BAR_WIDTH * start, MAIN_MENU_HEIGHT,
@@ -306,9 +354,6 @@ def check_events_while_in_main_menu(algorithm, event, all_algorithms, array_size
             algorithm.algorithm()
     elif click and SortButton(algorithm.name, 0, text=f"{algorithm.name[0:-4]} Sort").menu_mouse_click():
         return sort_menu(algorithm, all_algorithms)
-    elif array_size.mouse_click(click):
-        print("aa")
-        array_size.handle_event()
     else:
         for action_button in COMMAND_BUTTONS:
             button = CommandButton(action_button)
@@ -316,6 +361,11 @@ def check_events_while_in_main_menu(algorithm, event, all_algorithms, array_size
                 algorithm.algorithm()
             elif button.name == "reload" and button.mouse_click(click):
                 algorithm.generate_array()
+            elif button.name == "left" and button.mouse_click(click):
+                array_size.decrease(algorithm)
+            elif button.name == "right" and button.mouse_click(click):
+                array_size.increase(algorithm)
+
     return algorithm
 
 
@@ -339,7 +389,7 @@ def main():
     algorithm.generate_array()
     WIN.fill(WHITE)
     draw_bars(algorithm.array)
-    array_size = InputBox("a")
+    array_size = ArraySizeDisplay()
     while True:
         clock.tick(FPS)
         pygame.draw.rect(WIN, WHITE, MAIN_MENU)
