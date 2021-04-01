@@ -12,11 +12,12 @@ class Algorithm:
         self.start_time = time.time()
         self.time_elapsed = time.time() - self.start_time
         self.array = initial_array
-        self.array_length = 1024
+        self.array_length = len(self.array)
 
     def generate_array(self):
         global initial_array
         self.array = [random.randint(0, 1000) for i in range(self.array_length)]
+        self.array_length = len(self.array)
         initial_array = self.array
         self.update_display()
         return self.array
@@ -30,7 +31,7 @@ class Algorithm:
         import visualizer
         self.time_elapsed = time.time() - self.start_time
         visualizer.check_events_while_running()
-        visualizer.draw_bars(self.array, start, end)
+        visualizer.draw_bars(self.array, self.array_length, start, end)
 
     def update_one_bar(self, bar=None, mode=None):
         import visualizer

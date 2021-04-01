@@ -65,9 +65,10 @@ WIN = pygame.display.set_mode((VISUALIZER_WIDTH, WINDOW_HEIGHT))
 VISUALIZER_RECT = pygame.Rect(0, MAIN_MENU_HEIGHT, VISUALIZER_WIDTH, VISUALIZER_HEIGHT)
 pygame.display.set_caption("Sorting visualizer")
 
+DELAY = 0
 
 # ---------------- SORTING_ALGORITHMS ---------------- #
-ARRAY_LENGTH = len(initial_array)
+ARRAY_LENGTH = 1024
 BAR_WIDTH = VISUALIZER_WIDTH // ARRAY_LENGTH
 
 
@@ -132,60 +133,65 @@ class CommandButton:
 
 class InputBox:
 
-    def __init__(self, name, sth="1024"):
-        self.name = name
-        self.rect = pygame.Rect(BUTTON_WIDTH + BUTTON_SPACING * 9, 0, BUTTON_SPACING * 4, 64)
-        self.current_colour = BLACK
+    def __init__(self):
+        self.rect = pygame.Rect(BUTTON_WIDTH + BUTTON_SPACING * 20, 0, BUTTON_SPACING * 4, 64)
+        self.primary_colour = BLACK
         self.secondary_colour = GREEN
-        self.pos = pygame.mouse.get_pos()
-        self.text_list = [number for number in sth]
+        self.current_colour = self.primary_colour
         self.font = pygame.font.Font(BUTTONS_FONTS, BUTTONS_FONT_SIZE)
-        self.text = "".join(number for number in self.text_list)
+        self.text = "0"
 
     def draw(self):
-        pass
-    #     self.mouseover()
-    #     pygame.draw.rect(WIN, WHITE, self.rect)
-    #     pygame.draw.rect(WIN, self.current_colour, self.rect, 2)
-    #
-    #     if self.text:
-    #         text_obj = self.font.render(self.text, True, self.current_colour)
-    #         text_rect = text_obj.get_rect()
-    #         text_rect.center = (BUTTON_WIDTH + BUTTON_SPACING * 9 + BUTTON_SPACING * 4//2, 64//2)
-    #         WIN.blit(text_obj, text_rect)
+        self.mouseover()
+        pygame.draw.rect(WIN, WHITE, self.rect)
+        pygame.draw.rect(WIN, self.current_colour, self.rect, 2)
+
+        if self.text:
+            text_obj = self.font.render(self.text, True, self.current_colour)
+            text_rect = text_obj.get_rect()
+            text_rect.center = (BUTTON_WIDTH + BUTTON_SPACING * 20 + BUTTON_SPACING * 4//2, 64//2)
+            WIN.blit(text_obj, text_rect)
         pygame.display.update(self.rect)
 
     def mouseover(self):
-        if self.rect.collidepoint(*self.pos):
+        pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(*pos):
             self.current_colour = self.secondary_colour
+        else:
+            self.current_colour = self.primary_colour
 
     def mouse_click(self, click=False):
-        if self.rect.collidepoint(*self.pos) and click:
+        pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(*pos) and click:
             return True
 
     def handle_event(self):
         active = True
+        previous_text = self.text
+        self.text = ""
         while active:
+            self.current_colour = GREEN
             for event in pygame.event.get():
                 basic_check_event(event)
+                pos = pygame.mouse.get_pos()
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.rect.collidepoint(*self.pos):
+                    if self.rect.collidepoint(*pos):
                         active = not active
                     else:
                         active = False
-                    self.current_colour = GREY if active else BLACK
+
                 if event.type == pygame.KEYDOWN and active:
                     if event.key == pygame.K_RETURN:
                         active = False
                     elif event.key == pygame.K_BACKSPACE:
-                        self.text_list = self.text_list[:-1]
-                        self.text = "".join(number for number in self.text_list)
-                        self.draw()
-                    else:
-                        self.text_list += event.unicode
-                        self.text = "".join(number for number in self.text_list)
-                    self.draw()
-        return self
+                        self.text = self.text[:-1]
+                    elif event.key in (pygame.K_0, pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5,
+                                       pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9):
+                        self.text += event.unicode
+
+            self.draw()
+        if self.text == "":
+            self.text = previous_text
 
 
 class ArraySizeDisplay:
@@ -217,6 +223,7 @@ class ArraySizeDisplay:
             algorithm.generate_array()
         self.draw()
         pygame.display.update()
+        return algorithm
 
     def increase(self, algorithm):
         global ARRAY_LENGTH, BAR_WIDTH
@@ -229,6 +236,7 @@ class ArraySizeDisplay:
             algorithm.generate_array()
         self.draw()
         pygame.display.update()
+        return algorithm
 
 
 def draw_one_bar(bar, array, mode=None, single_bar=True):
@@ -249,24 +257,27 @@ def draw_one_bar(bar, array, mode=None, single_bar=True):
                      BAR_WIDTH + 1)
     if single_bar:
         pygame.display.update((BAR_WIDTH * bar, MAIN_MENU_HEIGHT, BAR_WIDTH, VISUALIZER_HEIGHT))
+        pygame.time.delay(DELAY)
 
 
-def draw_bars(array, start=0, end=None):
+def draw_bars(array, array_length, start=0, end=None):
     if end is None:
         end = len(array)
     global BAR_WIDTH, VISUALIZER_WIDTH
-    BAR_WIDTH = VISUALIZER_WIDTH // end
+    BAR_WIDTH = VISUALIZER_WIDTH // array_length
     for i in range(start, end):
         draw_one_bar(i, array, single_bar=False)
     pygame.display.update((BAR_WIDTH * start, MAIN_MENU_HEIGHT,
                            BAR_WIDTH * (end - start), VISUALIZER_HEIGHT))
+    pygame.time.delay(DELAY)
 
 
-def draw_main_menu(algorithm, array_size):
+def draw_main_menu(algorithm, array_size, delay_input_box):
     for action_button in COMMAND_BUTTONS:
         CommandButton(action_button).draw()
     SortButton(algorithm.name, 0, text=f"{algorithm.name[0:-4]} Sort").draw()
     array_size.draw()
+    delay_input_box.draw()
 
 
 def draw_sort_menu(all_algorithms):
@@ -345,7 +356,7 @@ def check_events_while_in_sort_menu(algorithm, all_algorithms, event):
     return algorithm, True
 
 
-def check_events_while_in_main_menu(algorithm, event, all_algorithms, array_size):
+def check_events_while_in_main_menu(algorithm, event, all_algorithms, array_size, delay_input_box):
     click = basic_check_event(event)
     if event.type == pygame.KEYDOWN:
         if event.key == pygame.K_r:
@@ -354,6 +365,10 @@ def check_events_while_in_main_menu(algorithm, event, all_algorithms, array_size
             algorithm.algorithm()
     elif click and SortButton(algorithm.name, 0, text=f"{algorithm.name[0:-4]} Sort").menu_mouse_click():
         return sort_menu(algorithm, all_algorithms)
+    elif delay_input_box.mouse_click(click):
+        global DELAY
+        delay_input_box.handle_event()
+        DELAY = int(delay_input_box.text)
     else:
         for action_button in COMMAND_BUTTONS:
             button = CommandButton(action_button)
@@ -362,9 +377,9 @@ def check_events_while_in_main_menu(algorithm, event, all_algorithms, array_size
             elif button.name == "reload" and button.mouse_click(click):
                 algorithm.generate_array()
             elif button.name == "left" and button.mouse_click(click):
-                array_size.decrease(algorithm)
+                algorithm = array_size.decrease(algorithm)
             elif button.name == "right" and button.mouse_click(click):
-                array_size.increase(algorithm)
+                algorithm = array_size.increase(algorithm)
 
     return algorithm
 
@@ -388,14 +403,15 @@ def main():
     algorithm = SelectionSort()
     algorithm.generate_array()
     WIN.fill(WHITE)
-    draw_bars(algorithm.array)
+    draw_bars(algorithm.array, algorithm.array_length)
     array_size = ArraySizeDisplay()
+    delay_input_box = InputBox()
     while True:
         clock.tick(FPS)
         pygame.draw.rect(WIN, WHITE, MAIN_MENU)
-        draw_main_menu(algorithm, array_size)
+        draw_main_menu(algorithm, array_size, delay_input_box)
         for event in pygame.event.get():
-            algorithm = check_events_while_in_main_menu(algorithm, event, all_algorithms, array_size)
+            algorithm = check_events_while_in_main_menu(algorithm, event, all_algorithms, array_size, delay_input_box)
         pygame.display.update()
 
 
