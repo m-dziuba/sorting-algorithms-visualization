@@ -2,37 +2,42 @@ import random
 import time
 
 
+initial_array = [random.randint(0, 1000) for i in range(1024)]
+
+
 class Algorithm:
     def __init__(self, name):
+        global initial_array
         self.name = name
         self.start_time = time.time()
         self.time_elapsed = time.time() - self.start_time
-        self.array = [random.randint(0, 1000) for i in range(1024)]
+        self.array = initial_array
         self.array_length = len(self.array)
-        self.bar_width = 1024 // self.array_length
 
     def generate_array(self):
-        self.array = [random.randint(0, 800) for i in range(1024)]
-        # self.array = [513, 408, 199, 100, 73, 642, 190, 696]
+        global initial_array
+        self.array = [random.randint(0, 1000) for i in range(self.array_length)]
         self.array_length = len(self.array)
-        self.bar_width = 1024 // self.array_length
+        initial_array = self.array
         self.update_display()
         return self.array
 
     def set_start_time(self):
         self.start_time = time.time()
 
-    def update_display(self, start=0, end=1024, inspected=None, compared=(None, None)):
+    def update_display(self, start=0, end=None):
+        if end is None:
+            end = self.array_length
         import visualizer
         self.time_elapsed = time.time() - self.start_time
-        visualizer.check_events(self, None)
-        visualizer.update(self.array, self.bar_width, start, end, inspected, compared)
+        visualizer.check_events_while_running()
+        visualizer.draw_bars(self.array, self.array_length, start, end)
 
     def update_one_bar(self, bar=None, mode=None):
         import visualizer
         self.time_elapsed = time.time() - self.start_time
-        visualizer.check_events(self, None)
-        visualizer.update_one_bar(bar, self.array, self.bar_width, mode)
+        visualizer.check_events_while_running()
+        visualizer.draw_one_bar(bar, self.array, mode)
 
 
 class SelectionSort(Algorithm):
@@ -81,7 +86,7 @@ class BubbleSort(Algorithm):
 class InsertionSort(Algorithm):
 
     def __init__(self):
-        super(InsertionSort, self).__init__("BubbleSort")
+        super(InsertionSort, self).__init__("InsertionSort")
 
     def algorithm(self):
         for i in range(1, self.array_length):
@@ -159,7 +164,7 @@ class QuickSort(Algorithm):
 
 
 class CountingSort(Algorithm):
-    
+
     def __init__(self):
         super(CountingSort, self).__init__("CountingSort")
 
