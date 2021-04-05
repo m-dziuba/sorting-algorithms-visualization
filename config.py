@@ -61,7 +61,7 @@ FPS = 200
 WIN = pygame.display.set_mode((VISUALIZER_WIDTH, WINDOW_HEIGHT))
 VISUALIZER_RECT = pygame.Rect(0, MAIN_MENU_HEIGHT, VISUALIZER_WIDTH, VISUALIZER_HEIGHT)
 pygame.display.set_caption("Sorting visualizer")
-print("1st time")
+
 DELAY = 0
 
 # ---------------- SORTING_ALGORITHMS ---------------- #
