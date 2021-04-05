@@ -119,8 +119,8 @@ class InputBox:
                         active = False
                     elif event.key == pygame.K_BACKSPACE:
                         self.text = self.text[:-1]
-                    elif event.key in (pygame.K_0, pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5,
-                                       pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9):
+                    elif event.key in (pygame.K_0, pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4,
+                                       pygame.K_5, pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9):
                         self.text += event.unicode
 
             self.draw()
