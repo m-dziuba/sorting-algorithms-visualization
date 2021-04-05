@@ -1,7 +1,6 @@
 import random
 import time
-from visualizer import check_events_while_running, draw_bars, draw_one_bar
-
+import visualizer
 
 initial_array = [random.randint(0, 1000) for i in range(1024)]
 
@@ -30,14 +29,14 @@ class Algorithm:
         if end is None:
             end = self.array_length
         self.time_elapsed = time.time() - self.start_time
-        check_events_while_running()
-        draw_bars(self.array, self.array_length, start, end)
+        visualizer.check_events_while_running()
+        visualizer.draw_bars(self.array, self.array_length, start, end)
 
     def update_one_bar(self, bar=None, mode=None):
 
         self.time_elapsed = time.time() - self.start_time
-        check_events_while_running()
-        draw_one_bar(bar, self.array, mode)
+        visualizer.check_events_while_running()
+        visualizer.draw_one_bar(bar, self.array, mode)
 
 
 class SelectionSort(Algorithm):

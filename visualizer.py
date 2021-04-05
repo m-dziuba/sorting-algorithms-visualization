@@ -1,7 +1,7 @@
 import pygame
 import sys
 import config as cfg
-from sorting_algorithms import *
+import sorting_algorithms as sa
 
 pygame.init()
 
@@ -40,7 +40,7 @@ class SortButton:
     def mouse_click(self):
         pos = pygame.mouse.get_pos()
         if self.rect.collidepoint(*pos):
-            return eval(self.name)
+            return eval("sa." + self.name)
 
     def menu_mouse_click(self):
         pos = pygame.mouse.get_pos()
@@ -333,8 +333,8 @@ def sort_menu(algorithm, all_algorithms):
 
 def main():
     clock = pygame.time.Clock()
-    all_algorithms = get_all_algorithms(Algorithm)
-    algorithm = SelectionSort()
+    all_algorithms = get_all_algorithms(sa.Algorithm)
+    algorithm = sa.SelectionSort()
     algorithm.generate_array()
     cfg.WIN.fill(cfg.WHITE)
     draw_bars(algorithm.array, algorithm.array_length)
@@ -347,14 +347,10 @@ def main():
         for event in pygame.event.get():
             algorithm = check_events_while_in_main_menu(algorithm, event, all_algorithms, array_size, delay_input_box)
         pygame.display.update()
-        # print(cfg.DELAY)
-        # print(array_size.text)
-        # print(algorithm.array_length)
-        # print(cfg.ARRAY_LENGTH)
 
 
 if __name__ == '__main__':
     main()
-    # pass
+
 # TODO review code cleanliness
 # TODO Buttons can be optimized
