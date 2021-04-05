@@ -33,7 +33,6 @@ class Algorithm:
         visualizer.draw_bars(self.array, self.array_length, start, end)
 
     def update_one_bar(self, bar=None, mode=None):
-
         self.time_elapsed = time.time() - self.start_time
         visualizer.check_events_while_running()
         visualizer.draw_one_bar(bar, self.array, mode)
