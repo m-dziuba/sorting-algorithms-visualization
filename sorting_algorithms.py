@@ -187,14 +187,3 @@ class CountingSort(Algorithm):
                     self.update_one_bar(k - 1)
                     self.update_one_bar(k, "inspected")
                     k += 1
-
-
-if __name__ == '__main__':
-    pass
-    # algo = SelectionSort()
-
-    # x = sorted(algo.array)
-    # print(sorted(x))
-    # algo.algorithm()
-    # print(algo.array)
-    # print(algo.array == x)
