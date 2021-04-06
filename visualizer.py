@@ -35,9 +35,12 @@ class Box(ClickableObject):
         if self.text:
             text_obj = cfg.FONT.render(self.text, True, self.colour)
             text_rect = text_obj.get_rect()
-            text_rect.center = (self.rect[0] + self.rect[2] // 2, self.rect[3] // 2)
+            text_rect.center = (self.rect[0] + self.rect[2] // 2, self.rect[1] + self.rect[3] // 2)
             cfg.WIN.blit(text_obj, text_rect)
-        pygame.display.update(self.rect)
+        pygame.display.update((self.rect[0],
+                               self.rect[1],
+                               self.rect[2] + 0.5 * cfg.BUTTONS_BORDER_WIDTH,
+                               self.rect[3] + 0.5 * cfg.BUTTONS_BORDER_WIDTH))
 
 
 class CommandButton(ClickableObject):
@@ -59,7 +62,7 @@ class SortButton(Box):
         super(SortButton, self).__init__()
         self.name = name
         self.background_colour = cfg.SELECTION_COLOUR
-        self.secondary_colour = cfg.BASE_COLOUR
+        self.secondary_colour = cfg.BLUE
         self.text = text
         self.column = button_number % cfg.BUTTONS_LIMIT_PER_ROW
         self.row = button_number // cfg.BUTTONS_LIMIT_PER_ROW
@@ -304,12 +307,12 @@ def main():
     algorithm = sa.SelectionSort()
     algorithm.generate_array()
     cfg.WIN.fill(cfg.WIN_COLOUR)
-    draw_bars(algorithm.array, algorithm.array_length)
     array_size = ArraySizeBox()
     delay_input_box = DelayInputBox()
     while True:
         clock.tick(cfg.FPS)
         pygame.draw.rect(cfg.WIN, cfg.WIN_COLOUR, cfg.MAIN_MENU)
+        draw_bars(algorithm.array, algorithm.array_length)
         draw_main_menu(algorithm, array_size, delay_input_box)
         for event in pygame.event.get():
             algorithm = check_events_while_in_main_menu(algorithm, event, all_algorithms, array_size, delay_input_box)
