@@ -15,58 +15,29 @@ class ClickableObject:
             return True
 
 
-class Button(ClickableObject):
-    pass
-
-
 class Box(ClickableObject):
 
-    def __init__(self, rect=(0, 0, 0, 0), colour=cfg.BUTTONS_COLOUR, text=""):
+    def __init__(self, rect=(0, 0, 0, 0), colour=cfg.BUTTONS_COLOUR, text=None):
         super(Box, self).__init__()
         self.rect = rect
         self.colour = colour
         self.text = text
+        self.background_colour = cfg.WIN_COLOUR
+        self.secondary_colour = None
 
     def draw(self):
-        pygame.draw.rect(cfg.WIN, cfg.WIN_COLOUR, self.rect)
-        pygame.draw.rect(cfg.WIN, self.colour, self.rect, 2)
-        text_obj = cfg.FONT.render(self.text, True, self.colour)
-        text_rect = text_obj.get_rect()
-        text_rect.center = (self.rect[0] + self.rect[2] // 2, self.rect[3] // 2)
-        cfg.WIN.blit(text_obj, text_rect)
+        if self.secondary_colour:
+            pos = pygame.mouse.get_pos()
+            if self.rect.collidepoint(*pos):
+                self.colour = self.secondary_colour
+        pygame.draw.rect(cfg.WIN, self.background_colour, self.rect)
+        pygame.draw.rect(cfg.WIN, self.colour, self.rect, cfg.BUTTONS_BORDER_WIDTH)
+        if self.text:
+            text_obj = cfg.FONT.render(self.text, True, self.colour)
+            text_rect = text_obj.get_rect()
+            text_rect.center = (self.rect[0] + self.rect[2] // 2, self.rect[3] // 2)
+            cfg.WIN.blit(text_obj, text_rect)
         pygame.display.update(self.rect)
-
-
-class SortButton(ClickableObject):
-
-    def __init__(self, name, button_number, colour=cfg.BUTTONS_COLOUR, secondary_colour=cfg.BASE_COLOUR, text=None):
-        super(SortButton, self).__init__((0, 0, 0, 0))
-        self.name = name
-        self.current_colour = colour
-        self.secondary_colour = secondary_colour
-        self.text = text
-        self.column = button_number % cfg.BUTTONS_LIMIT_PER_ROW
-        self.row = button_number // cfg.BUTTONS_LIMIT_PER_ROW
-        self.rect = pygame.Rect(self.column * cfg.BUTTON_WIDTH, self.row * cfg.BUTTON_HEIGHT,
-                                cfg.BUTTON_WIDTH, cfg.BUTTON_HEIGHT)
-
-    def draw(self):
-        self.mouseover()
-        pygame.draw.rect(cfg.WIN, self.current_colour, self.rect, cfg.BUTTONS_BORDER_WIDTH)
-        text_obj = cfg.FONT.render(self.text, True, self.current_colour)
-        text_rect = text_obj.get_rect()
-        text_rect.center = (((self.column + 0.5) * cfg.BUTTON_WIDTH), ((self.row + 0.5) * cfg.BUTTON_HEIGHT))
-        cfg.WIN.blit(text_obj, text_rect)
-
-    def mouseover(self):
-        pos = pygame.mouse.get_pos()
-        if self.rect.collidepoint(*pos):
-            self.current_colour = self.secondary_colour
-
-    def menu_mouse_click(self):
-        pos = pygame.mouse.get_pos()
-        if self.rect.collidepoint(*pos):
-            return True
 
 
 class CommandButton(ClickableObject):
@@ -80,6 +51,22 @@ class CommandButton(ClickableObject):
         pygame.draw.rect(cfg.WIN, cfg.WIN_COLOUR, self.rect)
         cfg.WIN.blit(pygame.image.load(cfg.COMMAND_BUTTONS_IMAGES[self.name]), cfg.COMMAND_BUTTONS_RECTS[self.name])
         pygame.display.update(self.rect)
+
+
+class SortButton(Box):
+
+    def __init__(self, name, button_number, text):
+        super(SortButton, self).__init__()
+        self.name = name
+        self.background_colour = cfg.SELECTION_COLOUR
+        self.secondary_colour = cfg.BASE_COLOUR
+        self.text = text
+        self.column = button_number % cfg.BUTTONS_LIMIT_PER_ROW
+        self.row = button_number // cfg.BUTTONS_LIMIT_PER_ROW
+        self.rect = pygame.Rect(self.column * cfg.BUTTON_WIDTH,
+                                self.row * cfg.BUTTON_HEIGHT,
+                                cfg.BUTTON_WIDTH,
+                                cfg.BUTTON_HEIGHT)
 
 
 class InputBox(Box):
@@ -154,11 +141,14 @@ def draw_one_bar(bar, array, mode=None, single_bar=True):
         colour = cfg.BASE_COLOUR
 
     pygame.draw.line(cfg.WIN, cfg.WIN_COLOUR,
-                     (cfg.BAR_WIDTH * (bar + 0.5), cfg.WINDOW_HEIGHT),
-                     (cfg.BAR_WIDTH * (bar + 0.5), cfg.BUTTON_HEIGHT + 0.5 * cfg.BUTTONS_BORDER_WIDTH),
+                     (cfg.BAR_WIDTH * (bar + 0.5),
+                      cfg.WINDOW_HEIGHT),
+                     (cfg.BAR_WIDTH * (bar + 0.5),
+                      cfg.BUTTON_HEIGHT + 0.5 * cfg.BUTTONS_BORDER_WIDTH),
                      cfg.BAR_WIDTH + 1)
     pygame.draw.line(cfg.WIN, colour,
-                     (cfg.BAR_WIDTH * (bar + 0.5), cfg.WINDOW_HEIGHT),
+                     (cfg.BAR_WIDTH * (bar + 0.5),
+                      cfg.WINDOW_HEIGHT),
                      (cfg.BAR_WIDTH * (bar + 0.5),
                       cfg.WINDOW_HEIGHT - array[bar] * cfg.VISUALIZER_HEIGHT // cfg.VISUALIZER_WIDTH),
                      cfg.BAR_WIDTH + 1)
@@ -189,6 +179,7 @@ def draw_main_menu(algorithm, array_size, delay_input_box):
 def draw_sort_menu(all_algorithms):
     for index, algorithms in enumerate(all_algorithms):
         SortButton(algorithms[0], index, text=algorithms[1]).draw()
+    pygame.display.update(cfg.MAIN_MENU)
 
 
 def get_all_algorithms(cls):
@@ -300,7 +291,6 @@ def sort_menu(algorithm, all_algorithms):
         draw_sort_menu(all_algorithms)
         for event in pygame.event.get():
             algorithm, run = check_events_while_in_sort_menu(algorithm, all_algorithms, event)
-        pygame.display.update(cfg.BUTTONS_MENU)
     return algorithm
 
 
