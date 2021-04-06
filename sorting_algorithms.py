@@ -13,28 +13,35 @@ class Algorithm:
         self.time_elapsed = time.time() - self.start_time
         self.array = initial_array
         self.array_length = len(self.array)
+        self.paused_time = None
 
     def generate_array(self):
         global initial_array
         self.array = [random.randint(0, 1000) for i in range(self.array_length)]
         self.array_length = len(self.array)
         initial_array = self.array
-        self.update_display()
+        self.update_display(running=False)
         return self.array
 
     def set_start_time(self):
         self.start_time = time.time()
 
-    def update_display(self, start=0, end=None):
+    def pause_time(self, pause):
+        if pause:
+            self.paused_time = time.time() - self.start_time
+        else:
+            self.start_time = time.time() - self.paused_time
+
+    def update_display(self, start=0, end=None, running=True):
         if end is None:
             end = self.array_length
         self.time_elapsed = time.time() - self.start_time
-        visualizer.check_events_while_running()
-        visualizer.draw_bars(self.array, self.array_length, start, end)
+        visualizer.check_events_while_running(self)
+        visualizer.draw_bars(self.array, self.array_length, start, end, running)
 
     def update_one_bar(self, bar=None, mode=None):
         self.time_elapsed = time.time() - self.start_time
-        visualizer.check_events_while_running()
+        visualizer.check_events_while_running(self)
         visualizer.draw_one_bar(bar, self.array, mode)
 
 
@@ -44,6 +51,7 @@ class SelectionSort(Algorithm):
         super(SelectionSort, self).__init__("SelectionSort")
 
     def algorithm(self):
+        self.set_start_time()
         for i in range(self.array_length):
             min_index = i
             self.update_one_bar(i - 1)
@@ -65,6 +73,7 @@ class BubbleSort(Algorithm):
         super(BubbleSort, self).__init__("BubbleSort")
 
     def algorithm(self):
+        self.set_start_time()
         swapping = True
         passes = 0
         while swapping:
@@ -87,6 +96,7 @@ class InsertionSort(Algorithm):
         super(InsertionSort, self).__init__("InsertionSort")
 
     def algorithm(self):
+        self.set_start_time()
         for i in range(1, self.array_length):
             self.update_one_bar(i, "inspected")
             for j in range(i - 1, -1, -1):
@@ -113,6 +123,7 @@ class MergeSort(Algorithm):
 
     def algorithm(self, start_index=None, end_index=None):
         if start_index is None:
+            self.set_start_time()
             start_index, end_index = 0, self.array_length
         if (end_index - start_index) > 1:
             middle_index = (end_index + start_index) // 2
@@ -141,6 +152,7 @@ class QuickSort(Algorithm):
 
     def algorithm(self, start_index=None, end_index=None):
         if start_index is None:
+            self.set_start_time()
             start_index, end_index = 0, self.array_length - 1
         if end_index - start_index > 0:
             pivot = self.array[end_index]
@@ -167,6 +179,7 @@ class CountingSort(Algorithm):
         super(CountingSort, self).__init__("CountingSort")
 
     def algorithm(self):
+        self.set_start_time()
         max_number = 0
         self.update_display()
         for i in self.array:
