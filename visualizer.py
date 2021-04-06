@@ -132,6 +132,12 @@ class ArraySizeBox(Box):
         return algorithm
 
 
+def get_all_algorithms(cls):
+    all_algorithms = [(f"{subclass.__name__}()", f"{subclass.__name__[:-4]} Sort")
+                      for subclass in cls.__subclasses__()]
+    return all_algorithms
+
+
 def draw_one_bar(bar, array, mode=None, single_bar=True):
     if mode == "inspected":
         colour = cfg.INSPECTED_COLOUR
@@ -180,12 +186,6 @@ def draw_sort_menu(all_algorithms):
     for index, algorithms in enumerate(all_algorithms):
         SortButton(algorithms[0], index, text=algorithms[1]).draw()
     pygame.display.update(cfg.MAIN_MENU)
-
-
-def get_all_algorithms(cls):
-    all_algorithms = [(f"{subclass.__name__}()", f"{subclass.__name__[:-4]} Sort")
-                      for subclass in cls.__subclasses__()]
-    return all_algorithms
 
 
 def basic_check_event(event):
